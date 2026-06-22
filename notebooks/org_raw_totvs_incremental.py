@@ -25,7 +25,7 @@ catalog        = "ihara_datalake_incremental"
 table_name     = "SD3"
 primary_keys   = ["R_E_C_N_O_"]
 load_type      = "incremental"
-lookback_hours = 2
+lookback_hours = 1
 
 sink         = f"{catalog}.raw.{table_name.lower()}"
 control_sink = f"{catalog}.raw._ingestion_control"
