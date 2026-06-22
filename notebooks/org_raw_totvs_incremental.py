@@ -179,8 +179,12 @@ def load_incremental():
     if new_hwm is None:
         new_hwm = last_hwm  # no valid watermark in batch — keep previous to avoid UTC/local mismatch
 
-    # Deduplicar por chave primária, mantendo o registro mais recente
-    w = W.partitionBy(*primary_keys).orderBy(F.col("S_T_A_M_P_").desc())
+    # Deduplicar por chave primária, mantendo o registro mais recente.
+    # COALESCE garante que registros novos (S_T_A_M_P_ nulo, só I_N_S_D_T_ preenchido)
+    # não sejam descartados por ordenação nula.
+    w = W.partitionBy(*primary_keys).orderBy(
+        F.coalesce(F.col("S_T_A_M_P_"), F.col("I_N_S_D_T_")).desc()
+    )
     staged_df = (
         raw_df
         .withColumn("_rn", F.row_number().over(w))
