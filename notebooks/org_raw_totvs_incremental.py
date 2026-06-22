@@ -133,10 +133,9 @@ def load_full():
     df.cache()
 
     row_count = df.count()
-    new_hwm   = (
-        df.select(F.greatest(F.max("S_T_A_M_P_"), F.max("I_N_S_D_T_"))).collect()[0][0]
-        or datetime.utcnow()
-    )
+    new_hwm   = df.select(F.greatest(F.max("S_T_A_M_P_"), F.max("I_N_S_D_T_"))).collect()[0][0]
+    if new_hwm is None:
+        new_hwm = datetime(1900, 1, 1)  # keep bootstrap value; avoids UTC/local timezone mismatch
 
     (df.write
         .format("delta")
@@ -176,10 +175,9 @@ def load_incremental():
         print("  Sem novos dados. Encerrando.")
         return
 
-    new_hwm = (
-        raw_df.select(F.greatest(F.max("S_T_A_M_P_"), F.max("I_N_S_D_T_"))).collect()[0][0]
-        or datetime.utcnow()
-    )
+    new_hwm = raw_df.select(F.greatest(F.max("S_T_A_M_P_"), F.max("I_N_S_D_T_"))).collect()[0][0]
+    if new_hwm is None:
+        new_hwm = last_hwm  # no valid watermark in batch — keep previous to avoid UTC/local mismatch
 
     # Deduplicar por chave primária, mantendo o registro mais recente
     w = W.partitionBy(*primary_keys).orderBy(F.col("S_T_A_M_P_").desc())
