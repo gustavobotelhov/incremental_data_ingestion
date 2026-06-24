@@ -19,15 +19,19 @@ from datetime import datetime, timedelta
 
 # COMMAND ----------
 
-# scope_api      = "production"
-# catalog        = "ihara_datalake_incremental"
-# table_name     = "SD3"
-# primary_keys   = ["R_E_C_N_O_"]
-# load_type      = "incremental"
-# lookback_hours = 1
-#
-# sink         = f"{catalog}.raw.{table_name.lower()}"
-# control_sink = f"{catalog}.raw._ingestion_control"
+# # Uso para desenvolvimento e testes
+# scope_api  = "production"
+# table_name = "SD3"
+# table = {
+#     "catalog":    "ihara_datalake_incremental",
+#     "schema":     "raw",
+#     "table_name": table_name,
+#     "file_path":  f"schema_table/totvs/{table_name}.json",
+# }
+# df    = spark.read.json(f"/Volumes/{table['catalog']}/raw/{table['file_path']}")
+# table = df.collect()[0].asDict()
+# sink         = f"{table['catalog']}.{table['schema']}.{table['table_name'].lower()}"
+# control_sink = f"{table['catalog']}.raw._ingestion_control"
 
 # COMMAND ----------
 
@@ -36,21 +40,20 @@ from datetime import datetime, timedelta
 
 # COMMAND ----------
 
-dbutils.widgets.text("scope_api",      "production",                 "Secret scope")
-dbutils.widgets.text("catalog",        "ihara_datalake_incremental", "Catalog")
-dbutils.widgets.text("table_name",     "SD3",                        "Table name")
-dbutils.widgets.text("primary_keys",   "R_E_C_N_O_",                 "Primary keys (comma-separated)")
-dbutils.widgets.text("load_type",      "incremental",                "Load type (incremental | full)")
-dbutils.widgets.text("lookback_hours", "1",                          "Lookback hours")
+scope_api  = "production"
+catalog    = dbutils.widgets.get("catalog")
+path_files = dbutils.widgets.get("path_files")
+table_raw  = dbutils.widgets.get("table")
 
-scope_api      = dbutils.widgets.get("scope_api")
-catalog        = dbutils.widgets.get("catalog")
-table_name     = dbutils.widgets.get("table_name")
-primary_keys   = [k.strip() for k in dbutils.widgets.get("primary_keys").split(",")]
-load_type      = dbutils.widgets.get("load_type")
-lookback_hours = int(dbutils.widgets.get("lookback_hours"))
+df    = spark.read.json(f"/Volumes/{catalog}/{path_files}")
+table = df.collect()[0].asDict()
 
-sink         = f"{catalog}.raw.{table_name.lower()}"
+table_name     = table["table_name"]
+primary_keys   = list(table["primary_keys"])
+load_type      = table["load_type"]
+lookback_hours = 1
+
+sink         = f"{catalog}.raw.{table_raw.lower()}"
 control_sink = f"{catalog}.raw._ingestion_control"
 
 # COMMAND ----------
