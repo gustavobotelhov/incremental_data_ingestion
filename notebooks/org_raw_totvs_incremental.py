@@ -15,17 +15,40 @@ from datetime import datetime, timedelta
 # COMMAND ----------
 
 # MAGIC %md
-# MAGIC #### Parâmetros (desenvolvimento)
-# MAGIC Para produção, substituir este bloco por `dbutils.widgets.get()`
+# MAGIC #### Parâmetros (desenvolvimento) — oculto; use o bloco de widgets abaixo
 
 # COMMAND ----------
 
-scope_api      = "production"
-catalog        = "ihara_datalake_incremental"
-table_name     = "SD3"
-primary_keys   = ["R_E_C_N_O_"]
-load_type      = "incremental"
-lookback_hours = 1
+# scope_api      = "production"
+# catalog        = "ihara_datalake_incremental"
+# table_name     = "SD3"
+# primary_keys   = ["R_E_C_N_O_"]
+# load_type      = "incremental"
+# lookback_hours = 1
+#
+# sink         = f"{catalog}.raw.{table_name.lower()}"
+# control_sink = f"{catalog}.raw._ingestion_control"
+
+# COMMAND ----------
+
+# MAGIC %md
+# MAGIC #### Parâmetros (produção via widgets / job parameters)
+
+# COMMAND ----------
+
+dbutils.widgets.text("scope_api",      "production",                 "Secret scope")
+dbutils.widgets.text("catalog",        "ihara_datalake_incremental", "Catalog")
+dbutils.widgets.text("table_name",     "SD3",                        "Table name")
+dbutils.widgets.text("primary_keys",   "R_E_C_N_O_",                 "Primary keys (comma-separated)")
+dbutils.widgets.text("load_type",      "incremental",                "Load type (incremental | full)")
+dbutils.widgets.text("lookback_hours", "1",                          "Lookback hours")
+
+scope_api      = dbutils.widgets.get("scope_api")
+catalog        = dbutils.widgets.get("catalog")
+table_name     = dbutils.widgets.get("table_name")
+primary_keys   = [k.strip() for k in dbutils.widgets.get("primary_keys").split(",")]
+load_type      = dbutils.widgets.get("load_type")
+lookback_hours = int(dbutils.widgets.get("lookback_hours"))
 
 sink         = f"{catalog}.raw.{table_name.lower()}"
 control_sink = f"{catalog}.raw._ingestion_control"
