@@ -105,6 +105,7 @@ def _create_control_table_if_not_exists():
             rows_merged     LONG
         )
         USING DELTA
+        PARTITIONED BY (table_name)
     """)
 
 
