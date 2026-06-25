@@ -181,9 +181,8 @@ def load_incremental():
 
     query = f"""
         SELECT * FROM {table_name}010
-        WHERE D_E_L_E_T_ = ' '
-        AND (  S_T_A_M_P_ >= TIMESTAMP '{effective_hwm}'
-            OR I_N_S_D_T_ >= TIMESTAMP '{effective_hwm}')
+        WHERE (  S_T_A_M_P_ >= TIMESTAMP '{effective_hwm}'
+              OR I_N_S_D_T_ >= TIMESTAMP '{effective_hwm}')
     """
     raw_df = read_from_oracle(query)
     raw_df.cache()
