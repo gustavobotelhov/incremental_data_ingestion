@@ -157,12 +157,8 @@ def load_full():
         "dh_insercao_raw",
         F.from_utc_timestamp(F.current_timestamp(), "Brazil/East").cast("timestamp"),
     )
-    df.cache()
 
     row_count = df.count()
-    new_hwm   = df.select(F.greatest(F.max("S_T_A_M_P_"), F.max("I_N_S_D_T_"))).collect()[0][0]
-    if new_hwm is None:
-        new_hwm = datetime(1900, 1, 1)  # keep bootstrap value; avoids UTC/local timezone mismatch
 
     (df.write
         .format("delta")
@@ -170,9 +166,8 @@ def load_full():
         .option("overwriteSchema", "true")
         .saveAsTable(sink, mode="overwrite"))
 
-    df.unpersist()
-    update_control(new_hwm, row_count, row_count)
-    print(f"[FULL LOAD] Concluído — {row_count} linhas. HWM: {new_hwm}")
+    update_control(datetime.utcnow(), row_count, row_count)
+    print(f"[FULL LOAD] Concluído — {row_count} linhas.")
 
 # COMMAND ----------
 
