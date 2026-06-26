@@ -152,13 +152,14 @@ def load_full():
     print(f"[FULL LOAD] Iniciando: {table_name}")
 
     query = f"SELECT * FROM {table_name}010 WHERE D_E_L_E_T_ = ' '"
+    if table_name == "SYS_COMPANY":
+        query = f"SELECT * FROM {table_name} WHERE D_E_L_E_T_ = ' '"
+
     df = read_from_oracle(query)
     df = df.withColumn(
         "dh_insercao_raw",
         F.from_utc_timestamp(F.current_timestamp(), "Brazil/East").cast("timestamp"),
     )
-
-    row_count = df.count()
 
     (df.write
         .format("delta")
@@ -166,8 +167,7 @@ def load_full():
         .option("overwriteSchema", "true")
         .saveAsTable(sink, mode="overwrite"))
 
-    update_control(datetime.utcnow(), row_count, row_count)
-    print(f"[FULL LOAD] Concluído — {row_count} linhas.")
+    print(f"[FULL LOAD] Concluído. Destino: {sink}")
 
 # COMMAND ----------
 
