@@ -20,18 +20,20 @@ from datetime import datetime, timedelta
 # COMMAND ----------
 
 # # Uso para desenvolvimento e testes
-# scope_api  = "production"
-# table_name = "SD3"
+# scope_api      = "production"
+# table_name     = "SD3"
+# catalog        = "ihara_datalake_incremental"
 # table = {
-#     "catalog":    "ihara_datalake_incremental",
-#     "schema":     "raw",
 #     "table_name": table_name,
 #     "file_path":  f"schema_table/totvs/{table_name}.json",
 # }
-# df    = spark.read.json(f"/Volumes/{table['catalog']}/raw/{table['file_path']}")
+# df    = spark.read.json(f"/Volumes/{catalog}/raw/{table['file_path']}")
 # table = df.collect()[0].asDict()
-# sink         = f"{table['catalog']}.{table['schema']}.{table['table_name'].lower()}"
-# control_sink = f"{table['catalog']}.raw._ingestion_control"
+# sink           = f"{catalog}.raw.{table['table_name'].lower()}"
+# control_sink   = f"{catalog}.raw._ingestion_control"
+# load_type      = table["load_type"]
+# lookback_hours = 1
+# primary_keys   = list(table["primary_keys"]) if table.get("primary_keys") else []
 
 # COMMAND ----------
 
@@ -49,7 +51,7 @@ df    = spark.read.json(f"/Volumes/{catalog}/{path_files}")
 table = df.collect()[0].asDict()
 
 table_name     = table["table_name"]
-primary_keys   = list(table["primary_keys"])
+primary_keys   = list(table["primary_keys"]) if table.get("primary_keys") else []
 load_type      = table["load_type"]
 lookback_hours = 1
 
